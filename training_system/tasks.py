@@ -10,7 +10,7 @@ from training_system import models
 
 @shared_task
 def start():
-    products: QuerySet = models.Product.objects.filter(start_date__lte=timezone.now())
+    products: QuerySet = models.Product.objects.filter(start_date__gte=timezone.now())
     # print(products)
     if products.exists():
         for product in products:
