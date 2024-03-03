@@ -24,8 +24,6 @@ def start():
 def upd_group(instance):
     # Получение групп по продукту! Сортировка по студентам instance - это объект Product
     groups: QuerySet = models.Group.objects.filter(product_id=instance.id).prefetch_related('product_id')
-    # Общее кол-во студентов
-    # print(len(groups))
 
     # Временное сохранение студентов
     students_qs = list(x.students.values_list('id', flat=True) for x in groups)  # QuerySets
@@ -37,9 +35,11 @@ def upd_group(instance):
             students.append(j)
 
     students.sort()
-    print(students)
+    # print(students)
+
+    # Общее кол-во студентов
     total_students = sum(group.students.count() for group in groups)
-    min_students_per_group = 5
+
     max_students_per_group = 10
 
     # Студент к каждой группе
@@ -47,6 +47,7 @@ def upd_group(instance):
 
     # Если не хватает студентов! (25 // 3 == 8) (8 * 3 != 25) (25 - 24 = 1 - это оставшиеся студент которая не рспределяется!)
     missing_student = 0
+    missed = []
     if students_per_group != int(groups.count() * students_per_group):
         missing_student = total_students % students_per_group
         missed = [students[missing_student]]
@@ -56,23 +57,22 @@ def upd_group(instance):
     # Перераспределение студентов на группы!
     for group in groups:
         # print(group.students.all())
-        print('starting 1')
+        # print('starting 1')
         if group.students.count() <= max_students_per_group:
-            print('in progress')
+            # print('in progress')
             group.students.set(students[:students_per_group])
             del students[:students_per_group]
-            print(students)
-        print('a little bit')
+        #     print(students)
 
         if missing_student > 0:
-            print("starting 2")
-            group.students.add(*students[:missing_student])
+            # print("starting 2")
+            group.students.add(*missed)
             missing_student -= 1
-            print("Student added (missing_student)")
+            # print("Student added (missing_student)")
 
     for gr in groups:
         if gr.students.count() == 0:
-            print(gr.students)
+            # print(gr.students)
             gr.delete()
     print('done')
 
