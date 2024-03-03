@@ -26,7 +26,7 @@ def upd_group(instance):
     groups: QuerySet = models.Group.objects.filter(product_id=instance.id).prefetch_related('product_id')
 
     # Временное сохранение студентов
-    students_qs = list(x.students.values_list('id', flat=True) for x in groups)  # QuerySets
+    students_qs = list(x.students.values_list('id', flat=True) for x in groups)  # QuerySets with id of students
     students = []  # Id of students
 
     for i in students_qs:
