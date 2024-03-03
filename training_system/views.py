@@ -15,7 +15,7 @@ def home(request: Request) -> Response:
     return render(request, 'index.html')
 
 
-class ProductCreateAPIView(APIView):
+class ProductCreateAPIView(APIView, LoginRequiredMixin):
     def post(self, request: Request) -> Response:
         serializer = serializers.ProductCreateSerializer(data=request.data)
         if serializer.is_valid():

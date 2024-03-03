@@ -1,0 +1,79 @@
+from celery import shared_task
+from datetime import datetime
+import time
+
+from django.db.models import QuerySet
+from django.utils import timezone
+
+from training_system import models
+
+
+@shared_task
+def start():
+    products: QuerySet = models.Product.objects.filter(start_date__lte=timezone.now())
+    # print(products)
+    if products.exists():
+        for product in products:
+            upd_group(product)
+    else:
+        print('Product not exists')
+    return None
+
+
+@shared_task
+def upd_group(instance):
+    # Получение групп по продукту! Сортировка по студентам instance - это объект Product
+    groups: QuerySet = models.Group.objects.filter(product_id=instance.id).prefetch_related('product_id')
+    # Общее кол-во студентов
+    # print(len(groups))
+
+    # Временное сохранение студентов
+    students_qs = list(x.students.values_list('id', flat=True) for x in groups)  # QuerySets
+    students = []  # Id of students
+
+    for i in students_qs:
+        for j in i:
+            # print(j)
+            students.append(j)
+
+    students.sort()
+    print(students)
+    total_students = sum(group.students.count() for group in groups)
+    min_students_per_group = 5
+    max_students_per_group = 10
+
+    # Студент к каждой группе
+    students_per_group = total_students // groups.count()
+
+    # Если не хватает студентов! (25 // 3 == 8) (8 * 3 != 25) (25 - 24 = 1 - это оставшиеся студент которая не рспределяется!)
+    missing_student = 0
+    if students_per_group != int(groups.count() * students_per_group):
+        missing_student = total_students % students_per_group
+        missed = [students[missing_student]]
+        del students[missing_student]
+        print(missing_student)
+
+    # Перераспределение студентов на группы!
+    for group in groups:
+        # print(group.students.all())
+        print('starting 1')
+        if group.students.count() <= max_students_per_group:
+            print('in progress')
+            group.students.set(students[:students_per_group])
+            del students[:students_per_group]
+            print(students)
+        print('a little bit')
+
+        if missing_student > 0:
+            print("starting 2")
+            group.students.add(*students[:missing_student])
+            missing_student -= 1
+            print("Student added (missing_student)")
+
+    for gr in groups:
+        if gr.students.count() == 0:
+            print(gr.students)
+            gr.delete()
+    print('done')
+
+    return "Students redistributed successfully."

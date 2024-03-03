@@ -35,7 +35,7 @@ class Lesson(models.Model):
         return f'Урок {self.lesson_name}'
 
 
-class Groupp(models.Model):
+class Group(models.Model):
     students = models.ManyToManyField(to=User, related_name='students')
     group_name = models.CharField(verbose_name="Название группы", max_length=100)
     product_id = models.ForeignKey(to=Product, on_delete=models.DO_NOTHING, related_name="product")
@@ -60,7 +60,7 @@ class Subscription(models.Model):
 
     class Meta:
         app_label = 'training_system'
-        ordering = ('-start_date', )
+        ordering = ('-start_date',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
