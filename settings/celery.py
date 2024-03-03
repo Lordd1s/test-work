@@ -9,7 +9,7 @@ app.config_from_object("django.conf:settings", namespace="CELERY")  # CELERY_Nam
 app.conf.beat_schedule = {
     "check_dates": {
         "task": "training_system/tasks.start",
-        "schedule": crontab(minute="0", hour="*"),
+        "schedule": crontab(minute="0", hour="*/5"),
     }
 }
 
