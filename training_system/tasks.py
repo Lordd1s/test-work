@@ -22,7 +22,7 @@ def start():
 
 @shared_task
 def upd_group(instance):
-    # Получение групп по продукту! Сортировка по студентам instance - это объект Product
+    # Получение групп по продукту! instance - это объект Product
     groups: QuerySet = models.Group.objects.filter(product_id=instance.id).prefetch_related('product_id')
 
     # Временное сохранение студентов
